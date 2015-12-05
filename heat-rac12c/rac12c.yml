@@ -1,0 +1,252 @@
+heat_template_version: 2015-04-30
+
+description: A single Oracle 12cR1 database using ASM
+
+resources:
+  ocrvote1:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 5
+
+  ocrvote2:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 5
+
+  ocrvote3:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 5
+  
+  disk01:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 10
+  
+  disk02:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 10
+  
+  disk03:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 10
+
+  disk04:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 10
+
+  disk05:
+    type: OS::Cinder::Volume
+    properties:
+      multiattach: True
+      size: 10
+
+  node1:
+    type: OS::Nova::Server
+    properties:
+      key_name: brian mac
+      image: centos-6
+      flavor: o.standard
+      user_data_format: RAW
+      user_data:
+        get_file: userdata-node1
+      networks:
+        - network: public
+        - network: main-oracle-lab-network
+  
+  node2:
+    type: OS::Nova::Server
+    properties:
+      key_name: brian mac
+      image: centos-6
+      flavor: o.standard
+      user_data_format: RAW
+      user_data:
+        get_file: userdata-node2
+      networks:
+        - network: public
+        - network: main-oracle-lab-network
+
+  node3:
+    type: OS::Nova::Server
+    properties:
+      key_name: brian mac
+      image: centos-6
+      flavor: o.standard
+      user_data_format: RAW
+      user_data:
+        get_file: userdata-node3
+      networks:
+        - network: public
+        - network: main-oracle-lab-network
+
+  attach_ocrvote1_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote1 }
+       instance_uuid: { get_resource: node1 }
+  
+  attach_ocrvote2_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote2 }
+       instance_uuid: { get_resource: node1 }
+  
+  attach_ocrvote3_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote3 }
+       instance_uuid: { get_resource: node1 }
+  
+  attach_disk01_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk01 }
+       instance_uuid: { get_resource: node1 }
+
+  attach_disk02_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk02 }
+       instance_uuid: { get_resource: node1 }
+
+  attach_disk03_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk03 }
+       instance_uuid: { get_resource: node1 }
+
+  attach_disk04_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk04 }
+       instance_uuid: { get_resource: node1 }
+
+  attach_disk05_node1:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk05 }
+       instance_uuid: { get_resource: node1 }
+
+  attach_ocrvote1_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote1 }
+       instance_uuid: { get_resource: node2 }
+  
+  attach_ocrvote2_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote2 }
+       instance_uuid: { get_resource: node2 }
+  
+  attach_ocrvote3_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote3 }
+       instance_uuid: { get_resource: node2 }
+  
+  attach_disk01_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk01 }
+       instance_uuid: { get_resource: node2 }
+
+  attach_disk02_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk02 }
+       instance_uuid: { get_resource: node2 }
+
+  attach_disk03_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk03 }
+       instance_uuid: { get_resource: node2 }
+
+  attach_disk04_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk04 }
+       instance_uuid: { get_resource: node2 }
+
+  attach_disk05_node2:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk05 }
+       instance_uuid: { get_resource: node2 }
+
+
+  attach_ocrvote1_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote1 }
+       instance_uuid: { get_resource: node3 }
+  
+  attach_ocrvote2_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote2 }
+       instance_uuid: { get_resource: node3 }
+  
+  attach_ocrvote3_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: ocrvote3 }
+       instance_uuid: { get_resource: node3 }
+  
+  attach_disk01_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk01 }
+       instance_uuid: { get_resource: node3 }
+
+  attach_disk02_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk02 }
+       instance_uuid: { get_resource: node3 }
+
+  attach_disk03_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk03 }
+       instance_uuid: { get_resource: node3 }
+
+  attach_disk04_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk04 }
+       instance_uuid: { get_resource: node3 }
+
+  attach_disk05_node3:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_resource: disk05 }
+       instance_uuid: { get_resource: node3 }
+
+
+
+
+  node1_port1:
+    type: OS::Neutron::Port
+    properties:
+      network: main-oracle-lab-network
+      fixed_ips:
+        - subnet: main-subnet-172-16
+        - ip_address: 172.16.1.3
+        
+outputs:
+  instance_ip:
+    description: The IP address of the deployed instance
+    value: { get_attr: [node1, first_address] }

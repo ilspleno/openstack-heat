@@ -1,0 +1,49 @@
+#cloud-config
+final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
+
+users:
+  - default
+
+hostname: node3
+fqdn: node3.lab.thewoodruffs.org
+
+manage-resolv-conf: true
+
+resolv_conf:
+  nameservers: ['8.8.4.4', '8.8.8.8']
+  searchdomains:
+    - lab.thewoodruffs.org
+    - openstacklocal
+    - novalocal
+  domain: lab.thewoodruffs.org
+  options:
+    rotate: true
+    timeout: 1
+
+write_files:
+-  content: |
+     DEVICE=eth1 
+     BOOTPROTO=none 
+     ONBOOT=yes 
+     NETWORK=172.16.1.0
+     NETMASK=255.255.255.0 
+     IPADDR=172.16.1.7
+     USERCTL=no
+     MTU=1400
+   path: /etc/sysconfig/network-scripts/ifcfg-eth1
+
+bootcmd:
+  - cloud-init-per once hosts_puppet echo "192.168.1.3 puppet.lab.thewoodruffs.org puppet" >> /etc/hosts
+  - cloud-init-per once hosts_oradb12 echo "172.16.1.7 node3.lab.thewoodruffs.org oradb12" >> /etc/hosts
+  - cloud-init-per once puppet_repo yum -y install https://yum.puppetlabs.com/puppetlabs-release-pc1-el-6.noarch.rpm
+  - cloud-init-per once puppetserver yum -y install puppet
+  - cloud-init-per once ckhconfig_puppet chkconfig puppet on
+  - cloud-init-per once iptables-off chkconfig iptables off
+  - cloud-init-per once iptables6-off chkconfig ip6tables off
+  - cloud-init-per once epel yum -y install epel-release
+  - cloud-init-per once cug yum -y install cloud-utils-growpart
+  - cloud-init-per once tty sed -i " s/requiretty/\!requiretty/g " /etc/sudoers
+  - cloud-init-per once dracutf /sbin/dracut -f -v > /tmp/dracut.log
+  - cloud-init-per once reboot reboot
+ 
+ 
