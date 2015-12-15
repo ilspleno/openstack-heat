@@ -1,0 +1,116 @@
+heat_template_version: 2015-04-30
+
+description: A single Oracle 12cR1 database using ASM
+
+parameters:
+  ocrvote1:
+    type: string
+  ocrvote2:
+    type: string
+  ocrvote3:
+    type: string
+  disk001:
+    type: string
+  disk002:
+    type: string
+  disk003:
+    type: string
+  disk004:
+    type: string
+  disk005:
+    type: string
+
+resources:
+
+  public_port1:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 868e8ee7-698d-4e75-9694-f2f71ce495cf
+      fixed_ips:
+      - subnet_id: f69bb952-0ea4-4625-b5d1-720ef5f90e2e
+      security_groups:
+      - default
+
+  public_port2:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 868e8ee7-698d-4e75-9694-f2f71ce495cf
+      fixed_ips:
+      - subnet_id: f69bb952-0ea4-4625-b5d1-720ef5f90e2e
+      security_groups:
+      - default
+
+  public_port3:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 868e8ee7-698d-4e75-9694-f2f71ce495cf
+      fixed_ips:
+      - subnet_id: f69bb952-0ea4-4625-b5d1-720ef5f90e2e
+      security_groups:
+      - default
+
+
+  floating_ip1:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: 49b1b8b7-5771-4c3f-bffe-d9ec3a928588
+      port_id: { get_resource: public_port1 }
+  floating_ip2:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: 36153d2b-a102-428d-bf47-ee070afbfbc1
+      port_id: { get_resource: public_port2 }
+  floating_ip3:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: bab1856e-632c-4649-b1e2-a6162c80c0a3
+      port_id: { get_resource: public_port3 }
+
+  rac12cr11:
+    type: OS::Nova::Server
+    properties:
+      key_name: brian-mac
+      image: Centos-6
+      flavor: o.standard
+      networks: 
+        - port: { get_resource: public_port1 } 
+  rac12cr12:
+    type: OS::Nova::Server
+    properties:
+      key_name: brian-mac
+      image: Centos-6
+      flavor: o.standard
+      networks: 
+        - port: { get_resource: public_port2 } 
+
+  rac12cr13:
+    type: OS::Nova::Server
+    properties:
+      key_name: brian-mac
+      image: Centos-6
+      flavor: o.standard
+      networks: 
+        - port: { get_resource: public_port3 } 
+
+  attach_ocrvote1_rac12cr11:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_param: ocrvote1 }
+       instance_uuid: { get_resource: rac12cr11 }
+
+  attach_ocrvote1_rac12cr12:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_param: ocrvote1 }
+       instance_uuid: { get_resource: rac12cr12 }
+
+  attach_ocrvote1_rac12cr13:
+     type: OS::Cinder::VolumeAttachment
+     properties:
+       volume_id: { get_param: ocrvote1 }
+       instance_uuid: { get_resource: rac12cr13 }
+  
+outputs:
+  instance_ip:
+    description: The IP address of the deployed instance
+    value: { get_attr: [rac12cr11, first_address] }

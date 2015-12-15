@@ -3,6 +3,34 @@ heat_template_version: 2015-04-30
 description: A single Oracle 12cR1 database using ASM
 
 resources:
+
+  public_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 82b19b05-3731-4154-945b-058e914431e7
+      fixed_ips:
+      - subnet_id: 6d66c670-8ec3-4e73-993a-db5e531d2f8b
+      security_groups:
+      - default
+
+  floating_ip:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: 77486fb3-c2bf-4dd5-bf07-d390904ac63e
+      port_id: { get_resource: public_port }
+
+  single12cR1:
+    type: OS::Nova::Server
+    properties:
+      key_name: brian-mac
+      image: Centos-6
+      flavor: o.standard
+      user_data_format: RAW
+      user_data:
+        get_file: userdata-single12cR1
+      networks: 
+        - port: { get_resource: public_port } 
+
   ocrvote1:
     type: OS::Cinder::Volume
     properties:
@@ -43,75 +71,56 @@ resources:
     properties:
       size: 10
 
-  oradb12:
-    type: OS::Nova::Server
-    properties:
-      key_name: brian mac
-      image: centos-6
-      flavor: o.standard
-      user_data_format: RAW
-      user_data:
-        get_file: userdata-oradb12
-      networks:
-        - port: { get_resource: oradb12_port1 }
 
   attach_ocrvote1:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: ocrvote1 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
   
   attach_ocrvote2:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: ocrvote2 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
   
   attach_ocrvote3:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: ocrvote3 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
   
   attach_disk01:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: disk01 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
 
   attach_disk02:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: disk02 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
 
   attach_disk03:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: disk03 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
 
   attach_disk04:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: disk04 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
 
   attach_disk05:
      type: OS::Cinder::VolumeAttachment
      properties:
        volume_id: { get_resource: disk05 }
-       instance_uuid: { get_resource: oradb12 }
+       instance_uuid: { get_resource: single12cR1 }
 
-  oradb12_port1:
-    type: OS::Neutron::Port
-    properties:
-      network: public
-      fixed_ips:
-        - subnet: public
-        - ip_address: 192.168.1.13
-        
 outputs:
   instance_ip:
     description: The IP address of the deployed instance
-    value: { get_attr: [oradb12, first_address] }
+    value: { get_attr: [single12cR1, first_address] }

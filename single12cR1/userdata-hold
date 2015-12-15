@@ -1,0 +1,55 @@
+#cloud-config
+final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
+
+users:
+  - default
+#  - name: brian
+#    gecos: Brian Woodruff
+#    selinux-user: staff_u
+#    lock-passwd: false
+#    passwd: $6$eGw/hxiRzssnSGR4$v0XWFXs5zOyHki0C5xSjbflQ55ign7dQWfnh1YkNLC2vEsslk8z5FCmXSQ2df0wf3YYOLACnU8EsNI/2A9CyE1
+#    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+#    groups: wheel
+#    ssh_pwauth: True
+#    ssh_authorized_keys:
+#      - ssh-dss AAAAB3NzaC1kc3MAAACBANrZ2dpq6K1kMBA4yv3uEjQAXeyYJ7VZ3Kk7nE4IwvIwr6Wa58CE0Q2tm6pM3FbQdHjI2wUZ8ib3EsJdIKDuSIcCWR/5A2VP0w+iFGJsEyrZbH8a6so6KC4DwfgzJKxzZYaGDqQZu7S/0+pCaoga08iHgtb7+k0SVJZj01L+TbL1AAAAFQDMeO+J/nCyXApL/OVe0Kgfm85fxwAAAIAg4GFhASKul34Uj41Gh695nZR+C/NKXjFpPXdGxUYIspZGIgnSPHG2tAGdus5ZUsZnwdqDPv1nIW5BigTj4OjZAserEyAeKxBEZc96zlIOHi/h4sYiOgx7togulEv4asm3CNNup3Mv0l3J1yx/nbzRnDVVG6p3HfL4R5Kv+Wt7ywAAAIAqNJVEQqMbkttsOqMoGZv9/yb5j0gcRUa3TVmKOIF8lgYuYkSREy/LNK5FjvkkQRofQp+d7oXKfYyPZZ/25gldRCUguWTzRW+I9Jodo94U5u2qZ5IAoPZPv1OEG9PFZtM16dLbffENejAvRAckWa/3DKlk8upMDPBTyQLMh4F0CA== brian@chimera.local
+
+hostname: single12cR1
+fqdn: single12cR1.lab.thewoodruffs.org
+
+manage-resolv-conf: true
+
+resolv_conf:
+  nameservers: ['8.8.4.4', '8.8.8.8']
+  searchdomains:
+    - lab.thewoodruffs.org
+  domain: lab.thewoodruffs.org
+  options:
+    rotate: true
+    timeout: 1
+
+#write_files:
+#-  content: |
+#     DEVICE=eth1 
+#     BOOTPROTO=none 
+#     ONBOOT=yes 
+#     NETWORK=172.16.1.0
+#     NETMASK=255.255.255.0 
+#     IPADDR=172.16.1.3
+#     USERCTL=no
+#     MTU=1400
+#   path: /etc/sysconfig/network-scripts/ifcfg-eth1
+
+runcmd:
+  - cloud-init-per once hosts_puppet echo "192.168.1.3 puppet.lab.thewoodruffs.org puppet" >> /etc/hosts
+#  - cloud-init-per once hosts_single12cR1 echo "192.168.1.13 single12cR1.lab.thewoodruffs.org single12cR1" >> /etc/hosts
+  - cloud-init-per once puppet_repo yum -y install https://yum.puppetlabs.com/puppetlabs-release-pc1-el-6.noarch.rpm
+  - cloud-init-per once puppetagent yum -y install puppet
+#  - cloud-init-per once ckhconfig_puppet chkconfig puppet on
+  - cloud-init-per once iptables-off chkconfig iptables off
+  - cloud-init-per once iptables6-off chkconfig ip6tables off
+  - cloud-init-per once epel yum -y install epel-release
+  - cloud-init-per once cug yum -y install cloud-utils-growpart
+  - cloud-init-per once tty sed -i " s/requiretty/\!requiretty/g " /etc/sudoers
+  - cloud-init-per once dracutf /sbin/dracut -f -v > /tmp/dracut.log
+#  - cloud-init-per once reboot reboot
