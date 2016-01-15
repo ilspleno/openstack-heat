@@ -1,16 +1,16 @@
 #!/bin/bash
 
-sed -i " s/HOSTNAME=.*/HOSTNAME=single12cR1.lab.thewoodruffs.org/g " /etc/sysconfig/network
+sed -i " s/HOSTNAME=.*/HOSTNAME=single12cR1.thewoodruffs.org/g " /etc/sysconfig/network
 echo namserver 8.8.8.8 > /etc/resolv.conf
 echo nameserver 8.8.4.4 >> /etc/resolv.conf
-echo domain lab.thewoodruffs.org >> /etc/resolv.conf
-echo search lab.thewoodruffs.org >> /etc/resolv.conf
+echo domain thewoodruffs.org >> /etc/resolv.conf
+echo search thewoodruffs.org >> /etc/resolv.conf
 
-echo "192.168.1.3 puppet.lab.thewoodruffs.org puppet" >> /etc/hosts
+#echo "192.168.1.3 puppet.lab.thewoodruffs.org puppet" >> /etc/hosts
 yum -y install https://yum.puppetlabs.com/puppetlabs-release-pc1-el-6.noarch.rpm
 yum -y install epel-release
 yum -y install puppet dracut-modules-growroot cloud-utils-growpart
-chkconfig puppet on
+#chkconfig puppet on
 chkconfig iptables off
 chkconfig ip6tables off
 sed -i " s/requiretty/\!requiretty/g " /etc/sudoers

@@ -4,37 +4,23 @@ description: A single Oracle 12cR1 database using ASM
 
 resources:
 
-  public_port:
-    type: OS::Neutron::Port
-    properties:
-      network_id: 82b19b05-3731-4154-945b-058e914431e7
-      fixed_ips:
-      - subnet_id: 6d66c670-8ec3-4e73-993a-db5e531d2f8b
-      security_groups:
-      - default
-
-  floating_ip:
-    type: OS::Neutron::FloatingIPAssociation
-    properties:
-      floatingip_id: 77486fb3-c2bf-4dd5-bf07-d390904ac63e
-      port_id: { get_resource: public_port }
-
   single12cR1:
     type: OS::Nova::Server
     properties:
-      key_name: brian-mac
-      image: Centos-6
-      flavor: o.standard
+      key_name: server1-key
+      image: CentOS-6-x86_64-GenericCloud
+      flavor: m1.large
       user_data_format: RAW
       user_data:
         get_file: userdata-single12cR1
       networks: 
-        - port: { get_resource: public_port } 
+        - network: private
 
   ocrvote1:
     type: OS::Cinder::Volume
     properties:
       size: 5
+      multiattach: True
 
   ocrvote2:
     type: OS::Cinder::Volume
