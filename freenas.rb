@@ -24,23 +24,22 @@ class FreeNASAPI
 	end
 
 	def create_zvol(name, size)
-		parms = { "name"	=> name,
+		parms = { "name"	=> "iSCSI/#{name}",
 			  "volsize"	=> size
 			}
 
-		self.class.post("/storage/volume/tank/iSCSI/zvols/",
+		self.class.post("/storage/volume/tank/zvols/",
 			body: parms.to_json,
 			:headers => { 'Content-Type' => 'application/json', 
      				      'Accept'       => 'application/json'}
-
+		)
 	end
 
-	def create_extent(name, size)
+	def create_extent(name)
 
-		parms = { "iscsi_target_extent_type"	=> "File",
-                          "iscsi_target_extent_name"	=>  name,
- 			  "iscsi_target_extent_filesize" => size,
-			  "iscsi_target_extent_path"	=>  "/mnt/tank/iSCSI/#{name}"
+		parms = { "iscsi_target_extent_name"    =>  name, 
+			  "iscsi_target_extent_type"	=> "Disk",
+			  "iscsi_target_extent_disk"	=> "zvol/tank/iSCSI/#{name}"
 			}	
 
 		self.class.post("/services/iscsi/extent/", 
@@ -134,6 +133,18 @@ class FreeNASAPI
 
 	end
 
+	def get_zvol(name)
+
+		zvols = self.class.get("/storage/volume/tank/zvols/")
+		zvols.each do |x|
+			if x["name"] == name
+				return x
+			end
+		end
+		return nil
+
+	end
+
 	def get_extent(name)
 		extents = self.class.get("/services/iscsi/extent/")
 		extents.each do |x|
@@ -170,6 +181,20 @@ class FreeNASAPI
 
 	end
 
+	def get_volume(name)
+
+		vols = self.class.get("/storage/volume/")
+		puts "VOLUMES:"
+		pp vols
+		vols.each do |x|
+			if x["vol_name"] == name
+				return x
+			end
+		end
+		return nil
+
+	end
+
 	def delete_target_to_extent(id)
 		self.class.delete("/services/iscsi/targettoextent/#{id}/")
 	end
@@ -180,6 +205,11 @@ class FreeNASAPI
 
 	def delete_extent(id)
 		self.class.delete("/services/iscsi/extent/#{id}/")
+	end
+
+	def delete_zvol(name)
+		self.class.delete("/storage/volume/tank/zvols/iSCSI/#{name}/")
+
 	end
 
 	
@@ -286,11 +316,13 @@ class FreeNAS
 		pp user_tag
 
 		# Create zvol to hold extent
+		puts "Creating zvol..."
 		zvol = @fn.create_zvol("#{name}-#{project}", size)
+		pp zvol
 
 		# Create a new iscsi disk
-		puts "Creating file extent..."
-		extent = @fn.create_extent("#{name}-#{project}", size)
+		puts "Creating extent..."
+		extent = @fn.create_extent("#{name}-#{project}")
 		pp extent
 
 		# Create target
@@ -314,18 +346,19 @@ class FreeNAS
 
 		merge_name = "#{name}-#{project}"
 
+		puts "Deleting iSCSI disk #{merge_name}"
 
 		# Get the IDs for extent, target and target/extent association
 		extent = @fn.get_extent(merge_name)
 		target = @fn.get_target merge_name.downcase
-		tgt_extent = @fn.get_target_extent(target["id"], extent["id"])
-		pp tgt_extent
+		tgt_extent = @fn.get_target_extent(target["id"], extent["id"]) unless (target.nil? or extent.nil?)
+		#zvol = @fn.get_zvol(merge_name)
 
 		# Start deleting
-		pp @fn.delete_target_to_extent tgt_extent["id"]
-		pp @fn.delete_target target["id"]
-		pp @fn.delete_extent extent["id"]
-		
+		pp @fn.delete_target_to_extent tgt_extent["id"] unless tgt_extent.nil?
+		pp @fn.delete_target target["id"] unless target.nil?
+		pp @fn.delete_extent extent["id"] unless extent.nil?
+		pp @fn.delete_zvol merge_name
 
 	end
 
